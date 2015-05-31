@@ -17,6 +17,7 @@ const int SCREEN_HEIGHT = 1 +HEIGHT * (SIZE+1);
 const int n = 3;
 int direction = 1;
 bool paused = false;
+SDL_Rect food = {0, 0, SIZE, SIZE};
 
 SDL_Window* Window = NULL;
 SDL_Renderer* Renderer = NULL;
@@ -79,6 +80,12 @@ void drawLandMarks()
 	}
 }
 
+void getFood()
+{
+	food.x = 1 + (rand()%WIDTH) * (SIZE+1);
+	food.y = 1 + (rand()%HEIGHT) * (SIZE+1);
+}
+
 int main( int, char**)
 {
 	if( !init() )
@@ -97,6 +104,8 @@ int main( int, char**)
 			snake[i].x = 1 + (SIZE+1)*i;
 			snake[i].y = 1;
 		}
+
+		getFood();
 
 		SDL_Event e;
 		bool quit = false;
@@ -191,6 +200,9 @@ int main( int, char**)
 						}
 						break;
 				}
+
+				SDL_SetRenderDrawColor( Renderer, 153, 255, 51, 255 );
+				SDL_RenderFillRect( Renderer, &food );
 
 				SDL_SetRenderDrawColor( Renderer, 0, 102, 153, 255 );
 				for( int i = 0; i < n-1; i++ )
