@@ -14,15 +14,13 @@ const int SIZE = 50;
 const int SCREEN_WIDTH = 1 + WIDTH * (SIZE+1);
 const int SCREEN_HEIGHT = 1 +HEIGHT * (SIZE+1);
 
-const int n = 3;
+int n = 3;
 int direction = 1;
 bool paused = false;
 SDL_Rect food = {0, 0, SIZE, SIZE};
 
 SDL_Window* Window = NULL;
 SDL_Renderer* Renderer = NULL;
-
-int go[n][2];
 
 bool init()
 {
@@ -95,13 +93,13 @@ int main( int, char**)
 	else {
 		srand(time(NULL));
 		
-		SDL_Rect snake[n];
+		SDL_Rect snake[20];
 
-		for( int i = 0; i < n; i++ )
+		for( int i = 17; i < 20; i++ )
 		{
 			snake[i].w = SIZE;
 			snake[i].h = SIZE;
-			snake[i].x = 1 + (SIZE+1)*i;
+			snake[i].x = 1 + (SIZE+1)*(i-17);
 			snake[i].y = 1;
 		}
 
@@ -151,52 +149,69 @@ int main( int, char**)
 				drawLandMarks();
 				
 				
-				for ( int i = 0; i < n-1; i++ )
+				if( snake[19].x == food.x && snake[19].y == food.y )
 				{
-					snake[i].x = snake[i+1].x;
-					snake[i].y = snake[i+1].y;
+					getFood();
+					n++;
+					snake[20-n].x = snake[21-n].x;
+					snake[20-n].y = snake[21-n].y;
+					snake[20-n].w = SIZE;
+					snake[20-n].h = SIZE;
+					for( int i = 21-n; i < 19; i++ )
+					{
+						snake[i].x = snake[i+1].x;
+						snake[i].y = snake[i+1].y;
+					}
 				}
-				
+				else
+				{
+					for ( int i = 20-n; i < 19; i++ )
+					{
+						snake[i].x = snake[i+1].x;
+						snake[i].y = snake[i+1].y;
+					}
+				}
+
 				switch( direction )
 				{
 					case 1:
-						if( snake[n-1].x + SIZE+1 == SCREEN_WIDTH)
+						if( snake[19].x + SIZE+1 == SCREEN_WIDTH)
 						{
-							snake[n-1].x = 1;
+							snake[19].x = 1;
 						}
 						else
 						{
-							snake[n-1].x += SIZE+1;
+							snake[19].x += SIZE+1;
 						}
 						break;
 					case 2:
-						if( snake[n-1].y == 1 )
+						if( snake[19].y == 1 )
 						{
-							snake[n-1].y = SCREEN_HEIGHT - SIZE - 1;
+							snake[19].y = SCREEN_HEIGHT - SIZE - 1;
 						}
 						else
 						{
-							snake[n-1].y -= SIZE+1;
+							snake[19].y -= SIZE+1;
 						}
 						break;
 					case 3:
-						if( snake[n-1].x == 1 )
+						if( snake[19].x == 1 )
 						{
-							snake[n-1].x = SCREEN_WIDTH - SIZE - 1;
+							snake[19].x = SCREEN_WIDTH - SIZE - 1;
 						}
 						else
 						{
-							snake[n-1].x -= SIZE+1;
+							snake[19].x -= SIZE+1;
 						}
 						break;
 					case 4:
-						if( snake[n-1].y + SIZE+1 == SCREEN_HEIGHT )
+						if( snake[19].y + SIZE+1 == SCREEN_HEIGHT )
 						{
-							snake[n-1].y = 1;
+							snake[19].y = 1;
 						}
 						else
 						{
-							snake[n-1].y += SIZE+1;
+							snake[19].y += SIZE+1;
 						}
 						break;
 				}
@@ -205,13 +220,13 @@ int main( int, char**)
 				SDL_RenderFillRect( Renderer, &food );
 
 				SDL_SetRenderDrawColor( Renderer, 0, 102, 153, 255 );
-				for( int i = 0; i < n-1; i++ )
+				for( int i = 20-n; i < 20; i++ )
 				{
 					SDL_RenderFillRect( Renderer, &snake[i] );
 				}
 				
 				SDL_SetRenderDrawColor( Renderer, 200, 0, 0, 255 );
-				SDL_RenderFillRect( Renderer, &snake[n-1] );
+				SDL_RenderFillRect( Renderer, &snake[19] );
 
 				SDL_RenderPresent( Renderer );
 				SDL_Delay(120);
