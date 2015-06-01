@@ -9,13 +9,14 @@
 
 const int WIDTH = 25;
 const int HEIGHT = 15;
-const int SIZE = 50;
+const int SIZE = 60;
 
 const int SCREEN_WIDTH = 1 + WIDTH * (SIZE+1);
 const int SCREEN_HEIGHT = 1 +HEIGHT * (SIZE+1);
 
 int n = 3;
 int max_length = WIDTH * HEIGHT - 5;
+int eaten = 0;
 int direction = 1;
 bool paused = false;
 SDL_Rect food = {0, 0, SIZE, SIZE};
@@ -149,11 +150,9 @@ int main( int, char**)
 				
 				drawLandMarks();
 				
-				
-				if( snake[0].x == food.x && snake[0].y == food.y )
-				{
-					getFood();
-					
+				if( eaten > 0 ) {
+					eaten--;
+
 					snake[n].x = snake[n-1].x;
 					snake[n].y = snake[n-1].y;
 					snake[n].w = SIZE;
@@ -218,6 +217,12 @@ int main( int, char**)
 						break;
 				}
 
+				if( snake[0].x == food.x && snake[0].y == food.y )
+				{
+					getFood();
+					eaten += 8;
+				}
+
 				SDL_SetRenderDrawColor( Renderer, 153, 255, 51, 255 );
 				SDL_RenderFillRect( Renderer, &food );
 
@@ -231,7 +236,7 @@ int main( int, char**)
 				SDL_RenderFillRect( Renderer, &snake[0] );
 
 				SDL_RenderPresent( Renderer );
-				SDL_Delay(120);
+				SDL_Delay(80);
 			}
 		}
 	}
