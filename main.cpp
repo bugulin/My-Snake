@@ -7,19 +7,21 @@
 #include <iostream>
 #include <ctime>
 
-const int WIDTH = 25;
-const int HEIGHT = 15;
-const int SIZE = 60;
+const int WIDTH = 35;//25;
+const int HEIGHT = 25;//15;
+const int SIZE = 30;
+const int max_length = WIDTH * HEIGHT / 3 * 2;
 
 const int SCREEN_WIDTH = 1 + WIDTH * (SIZE+1);
-const int SCREEN_HEIGHT = 1 +HEIGHT * (SIZE+1);
+const int SCREEN_HEIGHT = 1 + HEIGHT * (SIZE+1);
 
-int n = 3;
-int max_length = WIDTH * HEIGHT - 5;
+int n;
 int eaten = 0;
-int direction = 1;
+int direction = 0;
 bool paused = false;
 SDL_Rect food = {0, 0, SIZE, SIZE};
+
+SDL_Rect snake[max_length];
 
 SDL_Window* Window = NULL;
 SDL_Renderer* Renderer = NULL;
@@ -64,8 +66,6 @@ void close()
 	Renderer = NULL;
 
 	SDL_Quit();
-
-	std::cout << "Exited..." << std::endl;
 }
 
 void drawLandMarks()
@@ -79,11 +79,55 @@ void drawLandMarks()
 		}
 	}
 }
+int collide( int x, int y, SDL_Rect rect )
+{
+	if( x == rect.x && y == rect.y )
+	{
+		return 1;
+	}
+	return 0;
+}
 
 void getFood()
 {
-	food.x = 1 + (rand()%WIDTH) * (SIZE+1);
-	food.y = 1 + (rand()%HEIGHT) * (SIZE+1);
+	bool OK = false;
+	int x;
+	int y;
+
+	do {
+		x = 1 + (rand()%WIDTH) * (SIZE+1);
+		y = 1 + (rand()%HEIGHT) * (SIZE+1);
+		
+		OK = true;
+
+		for( int i = 0; i < n; i++ )
+		{
+			if( collide(x, y, snake[i]) )
+			{
+				OK = false;
+				break;
+			}
+		}
+	} while( !OK );
+
+	food.x = x;
+	food.y = y;
+}
+
+void newGame()
+{
+		n = 3;
+		eaten = 0;
+		for( int i = 0; i < n; i++ )
+		{
+			snake[i].w = SIZE;
+			snake[i].h = SIZE;
+			snake[i].x = 1 + (SIZE+1)*(n-i);
+			snake[i].y = 1;
+		}
+		
+		direction = 1;
+		getFood();
 }
 
 int main( int, char**)
@@ -95,17 +139,8 @@ int main( int, char**)
 	else {
 		srand(time(NULL));
 		
-		SDL_Rect snake[max_length];
-
-		for( int i = 0; i < n; i++ )
-		{
-			snake[i].w = SIZE;
-			snake[i].h = SIZE;
-			snake[i].x = 1 + (SIZE+1)*(n-i);
-			snake[i].y = 1;
-		}
-
-		getFood();
+		
+		newGame();
 
 		SDL_Event e;
 		bool quit = false;
@@ -145,6 +180,7 @@ int main( int, char**)
 			
 			if( !paused )
 			{
+				std::cout << n << " / " << max_length << std::endl;
 				SDL_SetRenderDrawColor( Renderer, 50, 50, 50, 255 );
 				SDL_RenderClear( Renderer );
 				
@@ -153,16 +189,22 @@ int main( int, char**)
 				if( eaten > 0 ) {
 					eaten--;
 
-					snake[n].x = snake[n-1].x;
-					snake[n].y = snake[n-1].y;
-					snake[n].w = SIZE;
-					snake[n].h = SIZE;
-					for( int i = n-1; i > 0; i-- )
+					if( n >= max_length )
 					{
-						snake[i].x = snake[i-1].x;
-						snake[i].y = snake[i-1].y;
+						newGame();
 					}
-					n++;
+					else {
+						snake[n].x = snake[n-1].x;
+						snake[n].y = snake[n-1].y;
+						snake[n].w = SIZE;
+						snake[n].h = SIZE;
+						for( int i = n-1; i > 0; i-- )
+						{
+							snake[i].x = snake[i-1].x;
+							snake[i].y = snake[i-1].y;
+						}
+						n++;
+					}
 				}
 				else
 				{
@@ -220,7 +262,7 @@ int main( int, char**)
 				if( snake[0].x == food.x && snake[0].y == food.y )
 				{
 					getFood();
-					eaten += 8;
+					eaten += 2;
 				}
 
 				SDL_SetRenderDrawColor( Renderer, 153, 255, 51, 255 );
@@ -236,7 +278,7 @@ int main( int, char**)
 				SDL_RenderFillRect( Renderer, &snake[0] );
 
 				SDL_RenderPresent( Renderer );
-				SDL_Delay(80);
+				SDL_Delay(150);
 			}
 		}
 	}
